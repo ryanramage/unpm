@@ -70,11 +70,15 @@ function verify(config, t) {
       , unpublish_version
       , get_latest.bind(null, ['1.1.1'])
       , unpublish_all
-      , unpm_service.server.close.bind(unpm_service.server)
-      , t.end.bind(t)
+      , end
     ]
 
     nest(fns)
+  }
+
+  function end() {
+    unpm_service.server.close()
+    t.end()
   }
 
   function put_package(done) {
@@ -134,7 +138,7 @@ function verify(config, t) {
     fixture['dist-tags'].latest = new_version
 
     fixture.versions[new_version].dist.tarball = url.format(config.host) +
-       '/unpm/-/unpm-' + new_version + '.tgz'
+       '/unpm/-/unpm/' + new_version + '.tgz'
 
     fixture._attachments[fixture.name + '-' + new_version + '.tgz'] =
       fixture._attachments[fixture.name + '-' + latest + '.tgz']
@@ -177,10 +181,6 @@ function verify(config, t) {
         var expected = JSON.parse(JSON.stringify(fixture))
           , body = JSON.parse(data.body)
 
-        Object.keys(expected.versions).forEach(function(version) {
-          delete expected.versions[version].readme
-        })
-
         delete body._rev
 
         var expected_tarballs = []
@@ -192,7 +192,7 @@ function verify(config, t) {
 
         for(var i = 0; i < versions.length; ++i) {
           expected_tarballs.push(
-              url.format(config.host) + '/unpm/-/unpm-' + versions[i] + '.tgz'
+              url.format(config.host) + '/unpm/-/unpm/' + versions[i] + '.tgz'
           )
         }
 
@@ -261,8 +261,6 @@ function verify(config, t) {
 
         var expected = fixture.versions['0.1.1']
 
-        delete expected.readme
-
         t.deepEqual(
             expected
           , body
@@ -276,7 +274,7 @@ function verify(config, t) {
   function get_tarball(done) {
     t.test('GET tarball does the right thing', function(t) {
       var req_options = {
-          uri: url.format(config.host) + '/unpm/-/unpm-0.1.1.tgz'
+          uri: url.format(config.host) + '/unpm/-/unpm/0.1.1.tgz'
         , body: JSON.stringify(fixture)
       }
 
@@ -325,7 +323,7 @@ function verify(config, t) {
 
       function try_tarball() {
         var req_options = {
-            uri: url.format(config.host) + '/unpm/-/unpm-0.1.1.tgz'
+            uri: url.format(config.host) + '/unpm/-/unpm/0.1.1.tgz'
           , body: JSON.stringify(fixture)
         }
 
@@ -362,7 +360,7 @@ function verify(config, t) {
 
       function try_tarball() {
         var req_options = {
-            uri: url.format(config.host) + '/unpm/-/unpm-1.1.1.tgz'
+            uri: url.format(config.host) + '/unpm/-/unpm/1.1.1.tgz'
           , body: JSON.stringify(fixture)
         }
 
